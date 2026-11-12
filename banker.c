@@ -189,6 +189,23 @@ static int le_commands(const char *nome, comando_t *cmds, int *n_cmds, int n_cli
     return 1;
 }
 
+static void prepara_estado(estado_t *e, int **maximo, int **alocacao, int **necessidade,
+                           int *disponivel, int n_clientes, int n_recursos) {
+    e->n_clientes = n_clientes;
+    e->n_recursos = n_recursos;
+    e->maximo = maximo;
+    e->alocacao = alocacao;
+    e->necessidade = necessidade;
+    e->disponivel = disponivel;
+
+    for (int i = 0; i < n_clientes; i++) {
+        for (int j = 0; j < n_recursos; j++) {
+            e->alocacao[i][j] = 0;
+            e->necessidade[i][j] = e->maximo[i][j];
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     int disponivel[MAX_RECURSOS];
     int n_recursos = 0;
@@ -198,14 +215,21 @@ int main(int argc, char **argv) {
     }
 
     int **maximo = cria_matriz(MAX_CLIENTES, n_recursos);
-    if (maximo == NULL) {
+    int **alocacao = cria_matriz(MAX_CLIENTES, n_recursos);
+    int **necessidade = cria_matriz(MAX_CLIENTES, n_recursos);
+    if (maximo == NULL || alocacao == NULL || necessidade == NULL) {
         printf("Erro: sem memoria\n");
+        libera_matriz(maximo, MAX_CLIENTES);
+        libera_matriz(alocacao, MAX_CLIENTES);
+        libera_matriz(necessidade, MAX_CLIENTES);
         return 1;
     }
 
     int n_clientes = 0;
     if (!le_customer("customer.txt", maximo, &n_clientes, n_recursos)) {
         libera_matriz(maximo, MAX_CLIENTES);
+        libera_matriz(alocacao, MAX_CLIENTES);
+        libera_matriz(necessidade, MAX_CLIENTES);
         return 1;
     }
 
@@ -213,6 +237,8 @@ int main(int argc, char **argv) {
     if (cmds == NULL) {
         printf("Erro: sem memoria\n");
         libera_matriz(maximo, MAX_CLIENTES);
+        libera_matriz(alocacao, MAX_CLIENTES);
+        libera_matriz(necessidade, MAX_CLIENTES);
         return 1;
     }
 
@@ -220,10 +246,17 @@ int main(int argc, char **argv) {
     if (!le_commands("commands.txt", cmds, &n_cmds, n_clientes, n_recursos)) {
         free(cmds);
         libera_matriz(maximo, MAX_CLIENTES);
+        libera_matriz(alocacao, MAX_CLIENTES);
+        libera_matriz(necessidade, MAX_CLIENTES);
         return 1;
     }
 
+    estado_t estado;
+    prepara_estado(&estado, maximo, alocacao, necessidade, disponivel, n_clientes, n_recursos);
+
     free(cmds);
     libera_matriz(maximo, MAX_CLIENTES);
+    libera_matriz(alocacao, MAX_CLIENTES);
+    libera_matriz(necessidade, MAX_CLIENTES);
     return 0;
 }
