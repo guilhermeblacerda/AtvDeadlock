@@ -6,6 +6,16 @@
 #define MAX_COMANDOS 1000
 #define TAM_LINHA 512
 
+#define CMD_RQ 1
+#define CMD_RL 2
+#define CMD_STATUS 3
+
+typedef struct {
+    int tipo;
+    int cliente;
+    int recursos[MAX_RECURSOS];
+} comando_t;
+
 typedef struct {
     int n_clientes;
     int n_recursos;
