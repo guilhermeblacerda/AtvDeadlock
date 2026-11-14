@@ -257,6 +257,51 @@ static int estado_seguro(estado_t *e) {
     return seguro;
 }
 
+static void faz_pedido(estado_t *e, int cliente, int *pedido) {
+    int m = e->n_recursos;
+
+    for (int j = 0; j < m; j++) {
+        if (pedido[j] > e->necessidade[cliente][j]) {
+            fprintf(e->saida, "The customer %d request", cliente);
+            for (int k = 0; k < m; k++) fprintf(e->saida, " %d", pedido[k]);
+            fprintf(e->saida, " was denied because exceed its maximum allocation\n");
+            return;
+        }
+    }
+
+    for (int j = 0; j < m; j++) {
+        if (pedido[j] > e->disponivel[j]) {
+            fprintf(e->saida, "The resources");
+            for (int k = 0; k < m; k++) fprintf(e->saida, " %d", e->disponivel[k]);
+            fprintf(e->saida, " are not enough to customer %d request", cliente);
+            for (int k = 0; k < m; k++) fprintf(e->saida, " %d", pedido[k]);
+            fprintf(e->saida, "\n");
+            return;
+        }
+    }
+
+    for (int j = 0; j < m; j++) {
+        e->disponivel[j] -= pedido[j];
+        e->alocacao[cliente][j] += pedido[j];
+        e->necessidade[cliente][j] -= pedido[j];
+    }
+
+    if (estado_seguro(e)) {
+        fprintf(e->saida, "Allocate to customer %d the resources", cliente);
+        for (int k = 0; k < m; k++) fprintf(e->saida, " %d", pedido[k]);
+        fprintf(e->saida, "\n");
+    } else {
+        for (int j = 0; j < m; j++) {
+            e->disponivel[j] += pedido[j];
+            e->alocacao[cliente][j] -= pedido[j];
+            e->necessidade[cliente][j] += pedido[j];
+        }
+        fprintf(e->saida, "The customer %d request", cliente);
+        for (int k = 0; k < m; k++) fprintf(e->saida, " %d", pedido[k]);
+        fprintf(e->saida, " was denied because result in an unsafe state\n");
+    }
+}
+
 int main(int argc, char **argv) {
     int disponivel[MAX_RECURSOS];
     int n_recursos = 0;
