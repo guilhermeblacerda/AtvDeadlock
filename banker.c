@@ -206,6 +206,57 @@ static void prepara_estado(estado_t *e, int **maximo, int **alocacao, int **nece
     }
 }
 
+static int estado_seguro(estado_t *e) {
+    int n = e->n_clientes;
+    int m = e->n_recursos;
+
+    int *trabalho = malloc(m * sizeof(int));
+    int *terminou = calloc(n, sizeof(int));
+    if (trabalho == NULL || terminou == NULL) {
+        free(trabalho);
+        free(terminou);
+        return 0;
+    }
+
+    for (int j = 0; j < m; j++) {
+        trabalho[j] = e->disponivel[j];
+    }
+
+    int achou = 1;
+    while (achou) {
+        achou = 0;
+        for (int i = 0; i < n; i++) {
+            if (terminou[i]) continue;
+            int pode = 1;
+            for (int j = 0; j < m; j++) {
+                if (e->necessidade[i][j] > trabalho[j]) {
+                    pode = 0;
+                    break;
+                }
+            }
+            if (pode) {
+                for (int j = 0; j < m; j++) {
+                    trabalho[j] += e->alocacao[i][j];
+                }
+                terminou[i] = 1;
+                achou = 1;
+            }
+        }
+    }
+
+    int seguro = 1;
+    for (int i = 0; i < n; i++) {
+        if (!terminou[i]) {
+            seguro = 0;
+            break;
+        }
+    }
+
+    free(trabalho);
+    free(terminou);
+    return seguro;
+}
+
 int main(int argc, char **argv) {
     int disponivel[MAX_RECURSOS];
     int n_recursos = 0;
