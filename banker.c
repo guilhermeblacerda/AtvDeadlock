@@ -325,6 +325,35 @@ static void faz_liberacao(estado_t *e, int cliente, int *liberado) {
     fprintf(e->saida, "\n");
 }
 
+static void mostra_estado(estado_t *e) {
+    int n = e->n_clientes;
+    int m = e->n_recursos;
+
+    fprintf(e->saida, "MAXIMUM | ALLOCATION | NEED\n");
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (j > 0) fprintf(e->saida, " ");
+            fprintf(e->saida, "%d", e->maximo[i][j]);
+        }
+        fprintf(e->saida, " | ");
+        for (int j = 0; j < m; j++) {
+            if (j > 0) fprintf(e->saida, " ");
+            fprintf(e->saida, "%d", e->alocacao[i][j]);
+        }
+        fprintf(e->saida, " | ");
+        for (int j = 0; j < m; j++) {
+            if (j > 0) fprintf(e->saida, " ");
+            fprintf(e->saida, "%d", e->necessidade[i][j]);
+        }
+        fprintf(e->saida, "\n");
+    }
+
+    fprintf(e->saida, "AVAILABLE");
+    for (int j = 0; j < m; j++) fprintf(e->saida, " %d", e->disponivel[j]);
+    fprintf(e->saida, "\n");
+}
+
 int main(int argc, char **argv) {
     int disponivel[MAX_RECURSOS];
     int n_recursos = 0;
