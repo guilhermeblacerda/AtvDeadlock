@@ -302,6 +302,29 @@ static void faz_pedido(estado_t *e, int cliente, int *pedido) {
     }
 }
 
+static void faz_liberacao(estado_t *e, int cliente, int *liberado) {
+    int m = e->n_recursos;
+
+    for (int j = 0; j < m; j++) {
+        if (liberado[j] > e->alocacao[cliente][j]) {
+            fprintf(e->saida, "The customer %d release", cliente);
+            for (int k = 0; k < m; k++) fprintf(e->saida, " %d", liberado[k]);
+            fprintf(e->saida, " was denied because exceed its current allocation\n");
+            return;
+        }
+    }
+
+    for (int j = 0; j < m; j++) {
+        e->disponivel[j] += liberado[j];
+        e->alocacao[cliente][j] -= liberado[j];
+        e->necessidade[cliente][j] += liberado[j];
+    }
+
+    fprintf(e->saida, "Release from customer %d the resources", cliente);
+    for (int k = 0; k < m; k++) fprintf(e->saida, " %d", liberado[k]);
+    fprintf(e->saida, "\n");
+}
+
 int main(int argc, char **argv) {
     int disponivel[MAX_RECURSOS];
     int n_recursos = 0;
