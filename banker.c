@@ -399,9 +399,32 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    FILE *saida = fopen("result.txt", "w");
+    if (saida == NULL) {
+        printf("Erro: nao criou result.txt\n");
+        free(cmds);
+        libera_matriz(maximo, MAX_CLIENTES);
+        libera_matriz(alocacao, MAX_CLIENTES);
+        libera_matriz(necessidade, MAX_CLIENTES);
+        return 1;
+    }
+
     estado_t estado;
     prepara_estado(&estado, maximo, alocacao, necessidade, disponivel, n_clientes, n_recursos);
+    estado.saida = saida;
 
+    for (int i = 0; i < n_cmds; i++) {
+        comando_t *c = &cmds[i];
+        if (c->tipo == CMD_RQ) {
+            faz_pedido(&estado, c->cliente, c->recursos);
+        } else if (c->tipo == CMD_RL) {
+            faz_liberacao(&estado, c->cliente, c->recursos);
+        } else if (c->tipo == CMD_STATUS) {
+            mostra_estado(&estado);
+        }
+    }
+
+    fclose(saida);
     free(cmds);
     libera_matriz(maximo, MAX_CLIENTES);
     libera_matriz(alocacao, MAX_CLIENTES);
