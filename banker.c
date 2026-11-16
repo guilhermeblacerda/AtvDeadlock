@@ -1,6 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "banker.h"
+
+#define MAX_CLIENTES 100
+#define MAX_RECURSOS 20
+#define MAX_COMANDOS 1000
+#define TAM_LINHA 512
+
+#define CMD_RQ 1
+#define CMD_RL 2
+#define CMD_STATUS 3
+
+typedef struct {
+    int tipo;
+    int cliente;
+    int recursos[MAX_RECURSOS];
+} comando_t;
+
+typedef struct {
+    int n_clientes;
+    int n_recursos;
+    int **maximo;
+    int **alocacao;
+    int **necessidade;
+    int *disponivel;
+    FILE *saida;
+} estado_t;
 
 int **cria_matriz(int linhas, int colunas) {
     int **m = malloc(linhas * sizeof(int *));
@@ -82,7 +106,8 @@ static int le_customer(const char *nome, int **maximo, int *n_clientes, int n_re
         if (*p == '\n' || *p == '\0') continue;
 
         if (separa_linha(p, valores, n_recursos) != 0) {
-            printf("Erro: linha %d de %s invalida\n", linha_atual + 1, nome);
+            printf("Erro: linha %d de %s nao tem %d recursos\n",
+                   linha_atual + 1, nome, n_recursos);
             fclose(f);
             return 0;
         }
